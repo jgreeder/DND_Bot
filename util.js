@@ -1,10 +1,16 @@
 const ItemType = {
     weapon: "weapon",
     magic: "magic",
-    next_page: "page",
-    condition: "condition"
+    page: "page",
+    condition: "condition",
+    spell: "spell",
+    skill: "skill"
 }
 
+const PageType = {
+    next: "next",
+    prev: "previous"
+}
 
 function titleCase(str) {
     var splitStr = str.toLowerCase().split(' ');
@@ -36,7 +42,17 @@ function extract(form) {
     return s;
 }
 
+class Page {
+    constructor(page_type, page_num, opt) {
+        this.label = `${titleCase(page_type)} page.`;
+        this.description = `Continue to ${page_type}`;
+        this.value = format(ItemType.page, page_num, opt);
+    }
+}
+
 module.exports.titleCase = titleCase;
 module.exports.select_format = format;
 module.exports.format_extract = extract;
 module.exports.ItemType = ItemType;
+module.exports.Page = Page;
+module.exports.PageType = PageType;
