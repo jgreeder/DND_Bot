@@ -5,7 +5,7 @@ const { titleCase, select_format, format_extract, ItemType } = require('../util'
 
 const Condition = require('../database/condition');
 
-async function get_all(name) {
+async function get_conditions(name) {
     const conditions = await Condition.find({'name': new RegExp((name ? name.toLowerCase() : ''))})
                                       .sort({'name': 'asc'})
                                       .lean();
@@ -36,7 +36,7 @@ module.exports = {
     async execute(interaction) {
         const opt = interaction.options.getString('condition_name');
 
-        const conditions = await get_all(opt);
+        const conditions = await get_conditions(opt);
 
         if (conditions.length == 1) {
             return interaction.reply({

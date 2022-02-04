@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
 
-const { titleCase, select_format, format_extract, ItemType } = require('../util')
+const { titleCase, select_format, format_extract, ItemType, Page, PageType } = require('../util')
 
 const Weapon = require('../database/weapon');
 const MagicItem = require('../database/magic_item');
@@ -54,7 +54,7 @@ function create_weapon_embed(weapon) {
     return embed;
 }
 
-async function get_all(name) {
+async function get_all_items(name) {
     let weapons = await Weapon.find({'name': new RegExp(name.toLowerCase())})
     .sort({'name':'asc'})
     .lean()
@@ -83,7 +83,7 @@ module.exports = {
     async execute(interaction) {
         const opt = interaction.options.getString('item_name');
 
-        const items = await get_all(opt);        
+        const items = await get_all_items(opt);        
 
         if (items.length == 1) {
             return interaction.reply({
@@ -93,7 +93,7 @@ module.exports = {
         } 
         if (items.length == 0) {
             return interaction.reply({
-                content: `Failed to find item: ${opt}`,
+                content: `Failed to find items with: ${opt}`,
                 ephemeral: true
             });
         }
@@ -104,7 +104,7 @@ module.exports = {
 
         if (options.length > 25) {
             options = options.slice(0, 24);
-            options.push({label: "Next page", description: "Continue to next page", value: select_format(ItemType.next_page, 1, opt)})
+            options.push(new Page(PageType.next, 1, opt));
         }
 
         const row = new MessageActionRow()
@@ -115,16 +115,15 @@ module.exports = {
 					.addOptions(options)
 			);
 
-        return interaction.reply({ content: 'Multiple items found!', components: [row] });
+        return interaction.reply({ 
+            content: 'Multiple items found!', 
+            components: [row] 
+        });
     },
     
     async select_handler(interaction) {
 
         const [item_type, item_id, opt] = format_extract(interaction.values[0])
-
-        // const selection = .split('#');
-        // const item_type = selection[0];
-        // const item_id = selection[1];
 
         let embed = null
         switch(item_type) {
@@ -136,19 +135,20 @@ module.exports = {
                 embed = create_magic_embed(await MagicItem.findById(item_id).lean());
                 break;
 
-            case ItemType.next_page:
-                // const opt = selection[2];
-                const items = await get_all(opt);
+            case ItemType.page:
+                const items = await get_all_items(opt);
 
                 let options = items.map((item) => {
                     return { label: titleCase(item.name), description: null, value: select_format(item.item_type, item._id.toHexString()) }
                 }).slice(parseInt(item_id)*24);
 
                 if (options.length > 25) {
-                    if (parseInt(item_id) > 0)
-                        options.unshift({label: "Previous page", description: "Continue to previous page", value: select_format(ItemType.next_page, parseInt(item_id)-1, opt)});
-                        options = options.slice(0, 24);
-                    options.push({label: "Next page", description: "Continue to next page", value: select_format(ItemType.next_page, parseInt(item_id)+1, opt)});
+                    if (parseInt(item_id) > 0) {
+                        options.unshift(new Page(PageType.prev, parseInt(item_id)-1, opt));
+                    }
+
+                    options = options.slice(0, 24);
+                    options.push(new Page(PageType.next, parseInt(item_id)+1, opt));
                 }
 
                 const row = new MessageActionRow()
@@ -158,13 +158,23 @@ module.exports = {
                         .setPlaceholder('Nothing selected')
                         .addOptions(options)
                 );
-                return interaction.update({ content: 'Multiple items found!', components: [row] });
 
+                return interaction.update({ 
+                    content: 'Multiple items found!', 
+                    components: [row] 
+                });
 
             default:
-                return interaction.update({content: "Malformed selection", components: [], ephemeral: true });
+                return interaction.update({
+                    content: "Malformed selection", 
+                    components: [], 
+                    ephemeral: true 
+                });
         }
 
-        return interaction.update({ embeds: [embed], content:" ", ephemeral: false });
+        return interaction.update({ 
+            embeds: [embed], 
+            content:" ", ephemeral: false 
+        });
     }
 }
