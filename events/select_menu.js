@@ -2,13 +2,15 @@ module.exports = {
     name: "interactionCreate",
     async execute(interaction) {
         if (!interaction.isSelectMenu) return;
-        
-        interaction.client.logger.info(`Runninng select handler: ${interaction.customId}` +
-                                        `Select value: ${interaction.values}`);
 
         const command = interaction.client.commands.get(interaction.customId);
 
-        if (!command) return;
+        if (!command) {
+            return;
+        }
+    
+        interaction.client.logger.info(`Runninng select handler: ${interaction.customId} ` +
+                                        `Select value: ${interaction.values}`);
 
         try {
             await command.select_handler(interaction);
