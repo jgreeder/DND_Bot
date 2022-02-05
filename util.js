@@ -4,7 +4,8 @@ const ItemType = {
     page: "page",
     condition: "condition",
     spell: "spell",
-    skill: "skill"
+    skill: "skill",
+    monster: "monster"
 }
 
 const PageType = {

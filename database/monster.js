@@ -16,8 +16,10 @@ const Monster = new mongoose.Schema({
     intelligence:   Number,
     wisdom:         Number,
     charisma:       Number,
-    con_save:       Number,
-    int_save:       Number
+    languages:      String,
+    condition_immunities: String,
+    senses:         String,
+    challenge_rating: String
 });
 
 module.exports = mongoose.model('monsters', Monster);
