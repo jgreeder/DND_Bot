@@ -1,10 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
 
-const { titleCase, select_format, format_extract, ItemType } = require('../util')
+const { titleCase, select_format, format_extract, ItemType, Page, PageType } = require('../util')
 
 const Skill = require('../database/skill');
-const skill = require('../database/skill');
 
 async function get_skills(name) {
     const skills = await Skill.find({
@@ -31,7 +30,7 @@ module.exports = {
     .addStringOption(option => {
             option = option.setName('skill_name')
             .setDescription('Name of skill')
-            .setRequired(true);
+            .setRequired(false);
             return option;
         }
     ),
