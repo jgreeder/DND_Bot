@@ -9,7 +9,7 @@ module.exports = {
             return;
         }
     
-        interaction.client.logger.info(`Runninng select handler: ${interaction.customId} ` +
+        interaction.client.logger.info(`Running select handler: ${interaction.customId} ` +
                                         `Select value: ${interaction.values}`);
 
         try {
