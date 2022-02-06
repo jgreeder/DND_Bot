@@ -1,16 +1,19 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
-const { titleCase, select_format, format_extract, ItemType, Page, PageType } = require('../util')
+const {ItemType, SelectMenu, Text} = require('../utils');
+
 
 const Monster = require('../database/monster');
 
 async function get_monsters(name) {
-    const monsters = await Monster.find({
+    let monsters = await Monster.find({
         name: new RegExp((name ? name.toLowerCase() : ''))
     })
     .sort({'name': 'asc'})
     .lean();
+
+    monsters.forEach((monster) => monster.item_type = ItemType.monster);
 
     return monsters;
 }
@@ -22,13 +25,13 @@ function create_monster_embed(monster) {
         if (key.startsWith('_')) continue;
         if (key === 'name' || key === 'type' || value === '') continue
 
-        fields.push({name: titleCase(key.split('_').join(' ')), value: String(value)});
+        fields.push({name: Text.titleCase(key.split('_').join(' ')), value: String(value)});
     }
 
     const embed = new MessageEmbed()
         .setColor('#0099ff')
-        .setTitle(titleCase(monster.name))
-        .setDescription(titleCase(monster.type))
+        .setTitle(Text.titleCase(monster.name))
+        .setDescription(Text.titleCase(monster.type))
         .addFields(fields);
     return embed;
 }
@@ -63,22 +66,7 @@ module.exports = {
             });
         }
 
-        let options = monsters.map((monster) => {
-            return { label: titleCase(monster.name), description: null, value: select_format(ItemType.monster, monster._id.toHexString())}
-        });
-
-        if (options.length > 25) {
-            options = options.slice(0, 24);
-            options.push(new Page(PageType.next, 1, monster_name));
-        }
-
-        const row = new MessageActionRow()
-        .addComponents(
-            new MessageSelectMenu()
-                .setCustomId(this.data.name)
-                .setPlaceholder('Nothing selected')
-                .addOptions(options)
-        );
+        const row = SelectMenu.create(this.data.name, monsters, 0, monster_name);
 
         return interaction.reply({ 
             content: 'Multiple monsters found!', 
@@ -87,7 +75,7 @@ module.exports = {
     },
     async select_handler(interaction) {
 
-        const [item_type, item_id, opt] = format_extract(interaction.values[0]);
+        const [item_type, item_id, opt] = SelectMenu.extract(interaction.values[0]);
 
         switch(item_type) {
             case ItemType.monster:
@@ -99,26 +87,8 @@ module.exports = {
             
             case ItemType.page:
                 const monsters = await get_monsters(opt);
-                let options = monsters.map((monster) => {
-                    return { label: titleCase(monster.name), description: null, value: select_format(ItemType.monster, monster._id.toHexString())}
-                }).slice(parseInt(item_id)*24);
         
-                if (options.length > 25) {
-                    if (parseInt(item_id) > 0) {
-                        options.unshift(new Page(PageType.prev, parseInt(item_id)-1, opt));
-                    }
-
-                    options = options.slice(0, 24);
-                    options.push(new Page(PageType.next, parseInt(item_id)+1, opt));
-                }
-
-                const row = new MessageActionRow()
-                .addComponents(
-                    new MessageSelectMenu()
-                        .setCustomId(this.data.name)
-                        .setPlaceholder('Nothing selected')
-                        .addOptions(options)
-                );
+                let row = SelectMenu.create(this.data.name, monsters, parseInt(item_id), opt);
 
                 return interaction.update({ 
                     content: 'Multiple monsters found!', 

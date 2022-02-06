@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
-const { titleCase, select_format, format_extract, ItemType, Page, PageType } = require('../util')
+const { Text, ItemType, SelectMenu } = require('../utils');
 
 const Weapon = require('../database/weapon');
 const MagicItem = require('../database/magic_item');
@@ -25,7 +25,7 @@ function create_magic_embed(magic_item) {
 
     const embed = new MessageEmbed()
         .setColor(color)
-        .setTitle(titleCase(magic_item.name))
+        .setTitle(Text.titleCase(magic_item.name))
         .setDescription(`Cost: ${magic_item.cost}`)
         .addFields(
             { name: 'Properties', value: magic_item.properties},
@@ -39,7 +39,7 @@ function create_magic_embed(magic_item) {
 function create_weapon_embed(weapon) {
     const embed = new MessageEmbed()
         .setColor('#0099ff')
-        .setTitle(titleCase(weapon.name))
+        .setTitle(Text.titleCase(weapon.name))
         .setDescription(`Cost: ${weapon.cost}`)
         .addFields(
             { name: 'Category',         value: weapon.category, inline:true},
@@ -98,32 +98,17 @@ module.exports = {
             });
         }
 
-        let options = items.map((item) => {
-            return { label: titleCase(item.name), description: null, value: select_format(item.item_type, item._id.toHexString())}
-        });
-
-        if (options.length > 25) {
-            options = options.slice(0, 24);
-            options.push(new Page(PageType.next, 1, opt));
-        }
-
-        const row = new MessageActionRow()
-			.addComponents(
-				new MessageSelectMenu()
-					.setCustomId(this.data.name)
-					.setPlaceholder('Nothing selected')
-					.addOptions(options)
-			);
+        const select_menu = SelectMenu.create(this.data.name, items, 0, opt);
 
         return interaction.reply({ 
             content: 'Multiple items found!', 
-            components: [row] 
+            components: [select_menu] 
         });
     },
     
     async select_handler(interaction) {
 
-        const [item_type, item_id, opt] = format_extract(interaction.values[0])
+        const [item_type, item_id, opt] = SelectMenu.extract(interaction.values[0])
 
         let embed = null
         switch(item_type) {
@@ -138,30 +123,11 @@ module.exports = {
             case ItemType.page:
                 const items = await get_all_items(opt);
 
-                let options = items.map((item) => {
-                    return { label: titleCase(item.name), description: null, value: select_format(item.item_type, item._id.toHexString()) }
-                }).slice(parseInt(item_id)*24);
-
-                if (options.length > 25) {
-                    if (parseInt(item_id) > 0) {
-                        options.unshift(new Page(PageType.prev, parseInt(item_id)-1, opt));
-                    }
-
-                    options = options.slice(0, 24);
-                    options.push(new Page(PageType.next, parseInt(item_id)+1, opt));
-                }
-
-                const row = new MessageActionRow()
-                .addComponents(
-                    new MessageSelectMenu()
-                        .setCustomId(this.data.name)
-                        .setPlaceholder('Nothing selected')
-                        .addOptions(options)
-                );
+                const select_menu = SelectMenu.create(this.data.name, items, parseInt(item_id), opt);
 
                 return interaction.update({ 
                     content: 'Multiple items found!', 
-                    components: [row] 
+                    components: [select_menu] 
                 });
 
             default:

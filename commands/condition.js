@@ -1,14 +1,16 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed, MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
-const { titleCase, select_format, format_extract, ItemType } = require('../util')
+const {Text, ItemType, SelectMenu } = require('../utils');
 
 const Condition = require('../database/condition');
 
 async function get_conditions(name) {
-    const conditions = await Condition.find({'name': new RegExp((name ? name.toLowerCase() : ''))})
+    let conditions = await Condition.find({'name': new RegExp((name ? name.toLowerCase() : ''))})
                                       .sort({'name': 'asc'})
                                       .lean();
+
+    conditions.forEach((condition) => condition.item_type = ItemType.condition);
 
     return conditions;
 }
@@ -16,7 +18,7 @@ async function get_conditions(name) {
 function create_condition_embed(condition) {
     const embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setTitle(titleCase(condition.name))
+                    .setTitle(Text.titleCase(condition.name))
                     .setDescription(condition.desc);
     return embed;
 }
@@ -52,24 +54,13 @@ module.exports = {
             });
         }
 
-        const options = conditions.map((condition) => {
-            return { label: titleCase(condition.name), description: null, value: select_format(ItemType.condition, condition._id.toHexString())}
-        });
+        const select_menu = SelectMenu.create(this.data.name, conditions, 0, opt);
 
-
-        const row = new MessageActionRow()
-			.addComponents(
-				new MessageSelectMenu()
-					.setCustomId(this.data.name)
-					.setPlaceholder('Nothing selected')
-					.addOptions(options)
-			);
-
-        return interaction.reply({ content: 'Multiple conditions found!', components: [row] });
+        return interaction.reply({ content: 'Multiple conditions found!', components: [select_menu] });
     },
     async select_handler(interaction) {
 
-        const [item_type, item_id, opt] = format_extract(interaction.values[0]);
+        const [item_type, item_id, opt] = SelectMenu.extract(interaction.values[0]);
 
         switch(item_type) {
             case ItemType.condition:
