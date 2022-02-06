@@ -20,15 +20,10 @@ async function add_items(item_set) {
     }
 }
 
-// add_items(require('../../DND_Docs/magic_items_better.json'))
-//     .then(console.log("Added normal magic items"))
-//     .catch("Error adding normal magic items");
+add_items(require('../../DND_Docs/magic_items_better.json'))
+    .then(console.log("Added normal magic items"))
+    .catch("Error adding normal magic items");
 
-// add_items(require('../../DND_Docs/magic_items_xge.json'))
-//     .then(console.log("Added XGE magic items"))
-//     .catch("Error adding XGE magic items");
-
-MagicItem.find({}).exec(function(err, magic) {
-    console.log(magic)
-    // console.log(err)
-})
+add_items(require('../../DND_Docs/magic_items_xge.json'))
+    .then(console.log("Added XGE magic items"))
+    .catch("Error adding XGE magic items");

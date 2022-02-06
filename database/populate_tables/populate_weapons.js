@@ -36,7 +36,7 @@ for (let c in weapon_list) {
         hand2 += "Damage Type: " + t["2h_damage"].damage_type;
     }
 
-    data = { "name" : t.name.toLowerCase(),
+    let data = { "name" : t.name.toLowerCase(),
              "category" : t.weapon_category,
              "weapon_range":   t.weapon_range,
              "cost":           cost,
