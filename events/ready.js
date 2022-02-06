@@ -1,5 +1,3 @@
-const winston = require('winston');
-
 module.exports = {
     name: "ready",
     once: true,
