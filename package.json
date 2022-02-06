@@ -9,7 +9,6 @@
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
     "mongoose": "^6.1.9",
-    "pm2": "^5.1.2",
     "winston": "^3.5.1"
   },
   "devDependencies": {},
