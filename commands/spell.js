@@ -1,8 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 
-// const { titleCase, select_format, format_extract, ItemType, Page, PageType } = require('../util')
-
 const { Text, SelectMenu, ItemType } = require('../utils');
 
 const Spell = require('../database/spell');
