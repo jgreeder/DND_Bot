@@ -3,6 +3,8 @@ const fs = require('fs');
 
 const config = require('./config.json');
 const db = require('./database/connection');
+const { createClient } = require('redis');
+
 
 const {
     Client,
@@ -25,6 +27,7 @@ winston.loggers.add('botLogger', botLogger);
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES] });
 client.commands = new Collection();
 client.logger = botLogger;
+client.redis = createClient();
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for ( const file of commandFiles ) {
