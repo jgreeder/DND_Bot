@@ -6,9 +6,12 @@
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
+    "@node-redis/client": "^1.0.3",
+    "@node-redis/json": "^1.0.2",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
     "mongoose": "^6.1.9",
+    "redis": "^4.0.3",
     "winston": "^3.5.1"
   },
   "devDependencies": {},
