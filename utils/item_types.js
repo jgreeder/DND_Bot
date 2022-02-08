@@ -5,7 +5,8 @@ const ItemType = {
     condition: "condition",
     spell: "spell",
     skill: "skill",
-    monster: "monster"
+    monster: "monster",
+    encounter: "encounter"
 }
 
 module.exports.ItemType = ItemType;
