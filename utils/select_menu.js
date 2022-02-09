@@ -1,7 +1,7 @@
 const { ItemType } = require('./item_types');
 const { titleCase } = require('./text');
 
-const { MessageActionRow, MessageSelectMenu } = require('discord.js');
+const { MessageActionRow, MessageSelectMenu, MessageButton } = require('discord.js');
 
 
 const PageType = {
@@ -64,5 +64,32 @@ function create_select_menu(name, items, page, query) {
     return select_menu;
 }
 
+function create_encounter_options(encounters, page) {
+    let options = encounters.map((encounter) => {
+        return { label: titleCase(encounter.name), description: null, value: format(ItemType.encounter, encounter.id)}
+    }).slice(page*25);
+
+    // if (options.length >= 25) {
+    //     if (page > 0) {
+    //         options.unshift(new Page(PageType.prev, page-1, ''));
+    //     }
+
+    // }
+    return options;
+}
+
+function create_encounter_menu(name, encounters, page) {
+    const options = create_encounter_options(encounters, page);
+    const select_menu = new MessageActionRow()
+        .addComponents(
+            new MessageSelectMenu()
+                .setCustomId(name)
+                .setPlaceholder('Nothing selected')
+                .addOptions(options)
+        );
+    return select_menu;
+}
+
 module.exports.create = create_select_menu;
+module.exports.encounters = create_encounter_menu;
 module.exports.extract = extract;
